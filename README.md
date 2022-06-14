@@ -1,7 +1,7 @@
-pokemongo
+Pokémon Toolkit
 =====
 
-An OTP application
+A set of tools for making the right Pokémon decisions.
 
 Build
 -----

@@ -1,8 +1,8 @@
-{application, pokemongo,
- [{description, "An OTP application"},
+{application, pt,
+ [{description, "Pokémon Toolkit"},
   {vsn, "0.1.0"},
   {registered, []},
-  {mod, {pokemongo_app, []}},
+  {mod, {pt_app, []}},
   {applications,
    [kernel,
     stdlib

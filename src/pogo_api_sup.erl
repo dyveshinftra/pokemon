@@ -1,13 +1,13 @@
-% The top supervisor for the Pokémon Toolkit application.
+% The supervisor for PoGo API (Pokémon Go database).
 
--module(pt_sup).
+-module(pogo_api_sup).
 
 -behaviour(supervisor).
 
 -export([start_link/0]).
 -export([init/1]).
 
--define(CHILDREN, [pogo_api_sup]).
+-define(CHILDREN, []).
 
 start_link() ->
     SupName = {local, ?MODULE},
@@ -15,13 +15,13 @@ start_link() ->
 
 init([]) ->
     Flags = {one_for_one, 1, 5},
-    ChildSpecs = lists:map(fun spec/1, ?CHILDREN),
-    {ok, {Flags, ChildSpecs}}.
+    Workers = lists:map(fun spec/1, ?CHILDREN),
+    {ok, {Flags, Workers}}.
 
 spec(Mod) ->
     {Mod,
      {Mod, start_link, []},
      permanent,
-     infinity,
-     supervisor,
+     1000,
+     worker,
      [Mod]}.

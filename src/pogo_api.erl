@@ -8,10 +8,11 @@
 
 -module(pogo_api).
 
--export([hashes/0]).
+-export([hashes/0, type_effectiveness/0]).
 
 -define(BASE_URL, "https://pogoapi.net/").
 -define(HASHES_URL, ?BASE_URL ++ "/api/v1/api_hashes.json").
+-define(TYPE_EFFECTIVENESS, ?BASE_URL ++ "/api/v1/type_effectiveness.json").
 
 fetch(Url) ->
     {ok, {{_Version, 200, _Reason}, _Headers, Body}} = httpc:request(Url),
@@ -20,3 +21,4 @@ fetch(Url) ->
     {Md5, BodyDecoded}.
 
 hashes() -> fetch(?HASHES_URL).
+type_effectiveness() -> fetch(?TYPE_EFFECTIVENESS).

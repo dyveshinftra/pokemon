@@ -19,8 +19,10 @@ init() ->
 
 % initialise the HTTP client application
 init_httpc() ->
+    {ok, Application} = application:get_application(),
+
     % proxy (from config)
-    case application:get_env(pt, proxy) of
+    case application:get_env(Application, proxy) of
         {ok, ProxyConfig} -> httpc:set_options([{proxy, ProxyConfig}]);
         undefined -> ok
     end.

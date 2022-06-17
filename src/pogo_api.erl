@@ -15,6 +15,8 @@
 
 fetch(Url) ->
     {ok, {{_Version, 200, _Reason}, _Headers, Body}} = httpc:request(Url),
-    jsone:decode(list_to_binary(Body), [{keys, atom}]).
+    Md5 = erlang:md5(Body),
+    BodyDecoded = jsone:decode(list_to_binary(Body), [{keys, atom}]),
+    {Md5, BodyDecoded}.
 
 hashes() -> fetch(?HASHES_URL).

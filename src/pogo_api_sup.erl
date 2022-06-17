@@ -7,7 +7,7 @@
 -export([start_link/0]).
 -export([init/1]).
 
--define(CHILDREN, []).
+-define(CHILDREN, [pogo_api]).
 
 start_link() ->
     SupName = {local, ?MODULE},

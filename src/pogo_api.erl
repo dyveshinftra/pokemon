@@ -6,6 +6,10 @@
 % We aim to provide useful information that you can use to produce tools and
 % information for the Pokemon Go community.
 
+% PoGo API website uses hashes to facilitate local caching of data.  The main
+% purpose of this server is to periodically check the hashes to keep the local
+% cache in sync.
+
 -module(pogo_api).
 -behaviour(gen_server).
 
@@ -22,6 +26,7 @@
 
 -export([type_effectiveness/0]).
 
+% called by supervisor
 start_link() ->
     ServerName = {local, ?MODULE},
     Module     = ?MODULE,
@@ -29,6 +34,7 @@ start_link() ->
     Options    = [],
     gen_server:start_link(ServerName, Module, Args, Options).
 
+% initialise gen_server
 init([]) ->
     io:format("TODO: check hashes in cache~n"),
     {ok, {}}.

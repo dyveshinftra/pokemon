@@ -19,9 +19,11 @@ cleanup({ok, _Pid}) ->
 
 hd_cache_test_() ->
     Filename = "eunit.test",
+    Msg1 = "eunit write test",
+    %Msg2 = "eunit double write test",
     {setup, fun setup/0, fun cleanup/1,
      [?_assert(is_list(hd_cache:get_path()) =:= true),
-      ?_assert(hd_cache:write_file(Filename, "eunit write test") =:= ok),
-      ?_assert(hd_cache:read_file(Filename) =:= {ok, <<"eunit write test">>})
+      ?_assert(hd_cache:write_file(Filename, Msg1) =:= ok),
+      ?_assert(hd_cache:read_file(Filename) =:= {ok, list_to_binary(Msg1)})
      ]
     }.

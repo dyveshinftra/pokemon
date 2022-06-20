@@ -21,6 +21,7 @@ hd_cache_test_() ->
     Filename = "eunit.test",
     {setup, fun setup/0, fun cleanup/1,
      [?_assert(is_list(hd_cache:get_path()) =:= true),
-      ?_assert(hd_cache:write_file(Filename, "eunit write test") =:= ok)
+      ?_assert(hd_cache:write_file(Filename, "eunit write test") =:= ok),
+      ?_assert(hd_cache:read_file(Filename) =:= "eunit write test")
      ]
     }.

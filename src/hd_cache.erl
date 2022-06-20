@@ -51,6 +51,11 @@ handle_call({write_file, Filename, Bytes}, _From, State) ->
     filelib:ensure_dir(AbsoluteFilename),
     Reply = file:write_file(AbsoluteFilename, Bytes),
     {reply, Reply, State};
+handle_call({read_file, Filename}, _From, State) ->
+    Path = State#state.path,
+    AbsoluteFilename = filename:absname_join(Path, Filename),
+    Reply = file:read_file(AbsoluteFilename),
+    {reply, Reply, State};
 handle_call(get_path, _From, State) ->
     Reply = State#state.path,
     {reply, Reply, State};
@@ -72,5 +77,5 @@ get_path() -> gen_server:call(?MODULE, get_path).
 
 write_file(Filename, Bytes) ->
     gen_server:call(?MODULE, {write_file, Filename, Bytes}).
-read_file(_Filename) ->
-    "eunit write test".
+read_file(Filename) ->
+    gen_server:call(?MODULE, {read_file, Filename}).

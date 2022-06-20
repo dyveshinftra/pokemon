@@ -2,75 +2,52 @@
 %   - off-line support
 %   - reduce bandwidth use
 %   - lower webserver load
+
 -module(hd_cache).
 -behaviour(gen_server).
 
-% called by supervisor
--export([start_link/0]).
-
-% gen_server behaviour
+-export([start_link/0, start_link/1, stop/0]).
 -export([init/1,
          handle_call/3,
          handle_cast/2,
          handle_info/2,
          terminate/2,
          code_change/3]).
+-export([get_path/0]). % get path of cached files
 
-% stop server
--export([stop/0]).
+-record(state, {path}).
 
-% calls
--export([path/0]). % cache path where files are stored
-
-% called by supervisor
 start_link() ->
+    Application = application:get_application(),
+    start_link(Application).
+start_link(Application) ->
     ServerName = {local, ?MODULE},
     Module     = ?MODULE,
-    Args       = [],
+    Args       = [Application],
     Options    = [],
     gen_server:start_link(ServerName, Module, Args, Options).
 
-% initialise generic server state
-init([]) ->
-    State = [],
+init([Application]) ->
+    PathType = user_cache,
+    Path = filename:basedir(PathType, Application),
+    State = #state{path=Path},
     {ok, State}.
 
-% return the path used to store the cache files
-handle_call(path, _From, State) ->
-    Reply = "TODO: must come from state!",
+handle_call(get_path, _From, State) ->
+    Reply = State#state.path,
     {reply, Reply, State};
-
-% handle stop gracefully
 handle_call(stop, _From, State) ->
     Reason = normal,
     Reply  = ok,
     {stop, Reason, Reply, State};
-
-% unknown call
 handle_call(_Request, _From, State) ->
     Reply = error,
     {reply, Reply, State}.
 
-% unknown cast
-handle_cast(_Request, State) ->
-    {noreply, State}.
+handle_cast(_Request, State) -> {noreply, State}.
+handle_info(_Info, State) -> {noreply, State}.
+terminate(_Reason, _State) -> ok.
+code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
-% unknown info
-handle_info(_Info, State) ->
-    {noreply, State}.
-
-% terminate server
-terminate(_Reason, _State) ->
-    ok.
-
-% no change in state on code change
-code_change(_OldVsn, State, _Extra) ->
-    {ok, State}.
-
-% stop server
-stop() ->
-    gen_server:call(?MODULE, stop).
-
-% which path is used to store the cache files
-path() ->
-    gen_server:call(?MODULE, path).
+stop()     -> gen_server:call(?MODULE, stop).
+get_path() -> gen_server:call(?MODULE, get_path).

@@ -3,6 +3,6 @@
 
 path_test() ->
     % default path
-    hd_cache:start_link(),
-    true = is_list(hd_cache:path()),
+    hd_cache:start_link("pt"),
+    true = is_list(hd_cache:get_path()),
     hd_cache:stop().

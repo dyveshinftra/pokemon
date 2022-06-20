@@ -13,7 +13,9 @@
          handle_info/2,
          terminate/2,
          code_change/3]).
--export([get_path/0]). % get path of cached files
+-export([get_path/0,
+         write_file/2
+        ]).
 
 -record(state, {path}).
 
@@ -42,6 +44,12 @@ init([Application]) ->
 
     {ok, State}.
 
+handle_call({write_file, Filename, Bytes}, _From, State) ->
+    Path = State#state.path,
+    AbsoluteFilename = filename:absname_join(Path, Filename),
+    filelib:ensure_dir(AbsoluteFilename),
+    Reply = file:write_file(AbsoluteFilename, Bytes),
+    {reply, Reply, State};
 handle_call(get_path, _From, State) ->
     Reply = State#state.path,
     {reply, Reply, State};
@@ -60,3 +68,6 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 stop()     -> gen_server:call(?MODULE, stop).
 get_path() -> gen_server:call(?MODULE, get_path).
+
+write_file(Filename, Bytes) ->
+    gen_server:call(?MODULE, {write_file, Filename, Bytes}).

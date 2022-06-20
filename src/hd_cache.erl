@@ -14,7 +14,8 @@
          terminate/2,
          code_change/3]).
 -export([get_path/0,
-         write_file/2
+         write_file/2,
+         read_file/1
         ]).
 
 -record(state, {path}).
@@ -71,3 +72,5 @@ get_path() -> gen_server:call(?MODULE, get_path).
 
 write_file(Filename, Bytes) ->
     gen_server:call(?MODULE, {write_file, Filename, Bytes}).
+read_file(_Filename) ->
+    "eunit write test".

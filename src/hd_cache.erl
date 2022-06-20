@@ -20,6 +20,7 @@
 start_link() ->
     Application = application:get_application(),
     start_link(Application).
+
 start_link(Application) ->
     ServerName = {local, ?MODULE},
     Module     = ?MODULE,
@@ -28,9 +29,17 @@ start_link(Application) ->
     gen_server:start_link(ServerName, Module, Args, Options).
 
 init([Application]) ->
-    PathType = user_cache,
-    Path = filename:basedir(PathType, Application),
+    Par = cache_path,
+    Path = case application:get_env(Application, Par) of
+        {ok, ConfiguredPath} ->
+            ConfiguredPath;
+        undefined ->
+            PathType = user_cache,
+            filename:basedir(PathType, Application)
+    end,
+
     State = #state{path=Path},
+
     {ok, State}.
 
 handle_call(get_path, _From, State) ->

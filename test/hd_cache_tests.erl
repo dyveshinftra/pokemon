@@ -31,6 +31,9 @@ hd_cache_test_() ->
 
       % make sure write_file "overrides"
       ?_assert(hd_cache:write_file(?FILENAME, ?MSG2) =:= ok),
-      ?_assert(hd_cache:read_file (?FILENAME) =:= {ok, list_to_binary(?MSG2)})
+      ?_assert(hd_cache:read_file (?FILENAME) =:= {ok, list_to_binary(?MSG2)}),
+
+      % check md5
+      ?_assert(hd_cache:md5(?FILENAME) =:= <<"185EB09397F65A765B81A13DE396FB79">>)
      ]
     }.

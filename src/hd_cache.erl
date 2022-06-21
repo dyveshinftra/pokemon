@@ -20,7 +20,8 @@
 % exported functionality
 -export([get_path/0,    % where cached files are stored
          write_file/2,  % write a cache file
-         read_file/1    % read a cache file
+         read_file/1,   % read a cache file
+	 md5/1		% calculate MD5 of cache file
         ]).
 
 -record(state, {path}).
@@ -74,6 +75,12 @@ handle_call({read_file, Filename}, _From, State) ->
     Reply = file:read_file(absname(Filename, State)),
     {reply, Reply, State};
 
+% calculate MD5 on cached file
+handle_call({md5, Filename}, _From, State) ->
+    {ok, Bytes} = file:read_file(absname(Filename, State)),
+    Reply = binary:encode_hex(erlang:md5(Bytes)),
+    {reply, Reply, State};
+
 % stop the server
 handle_call(stop, _From, State) ->
     Reason = normal,
@@ -90,5 +97,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 stop()              -> gen_server:call(?MODULE, stop).
 get_path()          -> gen_server:call(?MODULE, get_path).
 read_file(Filename) -> gen_server:call(?MODULE, {read_file, Filename}).
+md5(Filename)       -> gen_server:call(?MODULE, {md5, Filename}).
 write_file(Filename, Bytes) ->
     gen_server:call(?MODULE, {write_file, Filename, Bytes}).
+

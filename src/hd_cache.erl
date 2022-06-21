@@ -2,20 +2,25 @@
 %   - off-line support
 %   - reduce bandwidth use
 %   - lower webserver load
-
 -module(hd_cache).
+
 -behaviour(gen_server).
 
+% start/stop server
 -export([start_link/0, start_link/1, stop/0]).
+
+% generic server behaviour
 -export([init/1,
          handle_call/3,
          handle_cast/2,
          handle_info/2,
          terminate/2,
          code_change/3]).
--export([get_path/0,
-         write_file/2,
-         read_file/1
+
+% exported functionality
+-export([get_path/0,    % where cached files are stored
+         write_file/2,  % write a cache file
+         read_file/1    % read a cache file
         ]).
 
 -record(state, {path}).
@@ -31,51 +36,59 @@ start_link(Application) ->
     Options    = [],
     gen_server:start_link(ServerName, Module, Args, Options).
 
+% path where cached files are stored defaults to the application's user cache
+% but can be from config
+init_path(Application) ->
+    case application:get_env(Application, cache_path) of
+        {ok, Path} -> Path;
+        undefined  -> filename:basedir(user_cache, Application)
+    end.
+
 init([Application]) ->
-    Par = cache_path,
-    Path = case application:get_env(Application, Par) of
-        {ok, ConfiguredPath} ->
-            ConfiguredPath;
-        undefined ->
-            PathType = user_cache,
-            filename:basedir(PathType, Application)
-    end,
-
+    Path = init_path(Application),
     State = #state{path=Path},
-
     {ok, State}.
 
-handle_call({write_file, Filename, Bytes}, _From, State) ->
+% construct absolute filename based and filename and state's path
+absname(Filename, State) ->
     Path = State#state.path,
-    AbsoluteFilename = filename:absname_join(Path, Filename),
-    filelib:ensure_dir(AbsoluteFilename),
-    Reply = file:write_file(AbsoluteFilename, Bytes),
-    {reply, Reply, State};
-handle_call({read_file, Filename}, _From, State) ->
-    Path = State#state.path,
-    AbsoluteFilename = filename:absname_join(Path, Filename),
-    Reply = file:read_file(AbsoluteFilename),
-    {reply, Reply, State};
+    filename: absname_join(Path, Filename).
+
+% return the path where cached files are stored
 handle_call(get_path, _From, State) ->
     Reply = State#state.path,
     {reply, Reply, State};
+
+% write a cache file
+% this also creates path when necessary
+handle_call({write_file, Filename, Bytes}, _From, State) ->
+    AbsoluteFilename = absname(Filename, State),
+    Reply = case filelib:ensure_dir(AbsoluteFilename) of
+        ok -> file:write_file(AbsoluteFilename, Bytes);
+        {error, Reason} -> {error, Reason}
+    end,
+    {reply, Reply, State};
+
+% read a cache file
+handle_call({read_file, Filename}, _From, State) ->
+    Reply = file:read_file(absname(Filename, State)),
+    {reply, Reply, State};
+
+% stop the server
 handle_call(stop, _From, State) ->
     Reason = normal,
     Reply  = ok,
-    {stop, Reason, Reply, State};
-handle_call(_Request, _From, State) ->
-    Reply = error,
-    {reply, Reply, State}.
+    {stop, Reason, Reply, State}.
 
+% stubs for unused generic server behaviour
 handle_cast(_Request, State) -> {noreply, State}.
 handle_info(_Info, State) -> {noreply, State}.
 terminate(_Reason, _State) -> ok.
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
-stop()     -> gen_server:call(?MODULE, stop).
-get_path() -> gen_server:call(?MODULE, get_path).
-
+% public API
+stop()              -> gen_server:call(?MODULE, stop).
+get_path()          -> gen_server:call(?MODULE, get_path).
+read_file(Filename) -> gen_server:call(?MODULE, {read_file, Filename}).
 write_file(Filename, Bytes) ->
     gen_server:call(?MODULE, {write_file, Filename, Bytes}).
-read_file(Filename) ->
-    gen_server:call(?MODULE, {read_file, Filename}).

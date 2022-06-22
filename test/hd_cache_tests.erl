@@ -23,17 +23,17 @@ hd_cache_test_() ->
     {setup, fun setup/0, fun cleanup/1,
      [
       % differs per platform, just make sure it is "sane"
-      ?_assert(is_list(hd_cache:get_path()) =:= true),
+      ?_assert(is_list(hd_cache:get_path())),
 
       % write + read test, it should match
-      ?_assert(hd_cache:write_file(?FILENAME, ?MSG1) =:= ok),
-      ?_assert(hd_cache:read_file (?FILENAME) =:= {ok, list_to_binary(?MSG1)}),
+      ?_assertEqual(ok, hd_cache:write_file(?FILENAME, ?MSG1)),
+      ?_assertEqual({ok, list_to_binary(?MSG1)}, hd_cache:read_file(?FILENAME)),
 
       % make sure write_file "overrides"
-      ?_assert(hd_cache:write_file(?FILENAME, ?MSG2) =:= ok),
-      ?_assert(hd_cache:read_file (?FILENAME) =:= {ok, list_to_binary(?MSG2)}),
+      ?_assertEqual(ok, hd_cache:write_file(?FILENAME, ?MSG2)),
+      ?_assertEqual({ok, list_to_binary(?MSG2)}, hd_cache:read_file(?FILENAME)),
 
       % check md5
-      ?_assert(hd_cache:md5(?FILENAME) =:= <<"185EB09397F65A765B81A13DE396FB79">>)
+      ?_assertEqual(<<"185eb09397f65a765b81a13de396fb79">>, hd_cache:md5(?FILENAME))
      ]
     }.

@@ -78,7 +78,7 @@ handle_call({read_file, Filename}, _From, State) ->
 % calculate MD5 on cached file
 handle_call({md5, Filename}, _From, State) ->
     {ok, Bytes} = file:read_file(absname(Filename, State)),
-    Reply = binary:encode_hex(erlang:md5(Bytes)),
+    Reply = binary_ext:to_hex(erlang:md5(Bytes)),
     {reply, Reply, State};
 
 % stop the server

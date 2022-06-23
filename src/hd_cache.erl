@@ -24,7 +24,8 @@
          write_file/2,  % write a cache file
          read_file/1,   % read a cache file
          md5/1,         % calculate MD5 of cache file
-         age/1          % age of cache file in seconds
+         age/1,         % age of cache file in seconds
+         touch/1        % update age of cache file
         ]).
 
 -record(state, {path}).
@@ -90,6 +91,13 @@ handle_call({age, Filename}, _From, State) ->
     Reply = erlang:system_time(second) - FileInfo#file_info.mtime,
     {reply, Reply, State};
 
+% update age of cache file
+handle_call({touch, Filename}, _From, State) ->
+    AbsoluteFilename = absname(Filename, State),
+    {ok, FileInfo} = file:read_file_info(AbsoluteFilename, [{time, posix}]),
+    Reply = file:write_file_info(AbsoluteFilename, FileInfo#file_info{mtime=erlang:system_time(second)}, [{time, posix}]),
+    {reply, Reply, State};
+
 % stop the server
 handle_call(stop, _From, State) ->
     Reason = normal,
@@ -106,6 +114,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 stop()                      -> gen_server:call(?MODULE, stop).
 get_path()                  -> gen_server:call(?MODULE, get_path).
 write_file(Filename, Bytes) -> gen_server:call(?MODULE, {write_file, Filename, Bytes}).
-read_file(Filename)         -> gen_server:call(?MODULE, {read_file, Filename}).
-md5(Filename)               -> gen_server:call(?MODULE, {md5, Filename}).
-age(Filename)               -> gen_server:call(?MODULE, {age, Filename}).
+read_file(Filename)         -> gen_server:call(?MODULE, {read_file,  Filename}).
+md5(Filename)               -> gen_server:call(?MODULE, {md5,        Filename}).
+age(Filename)               -> gen_server:call(?MODULE, {age,        Filename}).
+touch(Filename)             -> gen_server:call(?MODULE, {touch,      Filename}).

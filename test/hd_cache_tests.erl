@@ -16,6 +16,17 @@ configured_path_test() ->
     hd_cache:stop(),
     application:unset_env(?APPLICATION, cache_path).
 
+% make sure age is between before and after write timestamp    
+age_test() ->
+    hd_cache:start_link(?APPLICATION),
+    TimeBeforeWrite = erlang:system_time(second),
+    hd_cache:write_file(?FILENAME, "age test"),
+    WriteAge = hd_cache:age(?FILENAME),
+    TimeAfterWrite = erlang:system_time(second),
+    ?assert(erlang:system_time(second) - TimeBeforeWrite >= WriteAge),
+    ?assert(erlang:system_time(second) - TimeAfterWrite =< WriteAge),
+    hd_cache:stop().
+
 % actual API tests
 setup()             -> hd_cache:start_link(?APPLICATION).
 cleanup({ok, _Pid}) -> hd_cache:stop().
@@ -34,9 +45,6 @@ hd_cache_test_() ->
       ?_assertEqual({ok, list_to_binary(?MSG2)}, hd_cache:read_file(?FILENAME)),
 
       % check md5
-      ?_assertEqual(<<"185eb09397f65a765b81a13de396fb79">>, hd_cache:md5(?FILENAME)),
-
-      % check age
-      ?_assert(hd_cache:age(?FILENAME) >= 0)
+      ?_assertEqual(<<"185eb09397f65a765b81a13de396fb79">>, hd_cache:md5(?FILENAME))
      ]
     }.

@@ -34,6 +34,9 @@ hd_cache_test_() ->
       ?_assertEqual({ok, list_to_binary(?MSG2)}, hd_cache:read_file(?FILENAME)),
 
       % check md5
-      ?_assertEqual(<<"185eb09397f65a765b81a13de396fb79">>, hd_cache:md5(?FILENAME))
+      ?_assertEqual(<<"185eb09397f65a765b81a13de396fb79">>, hd_cache:md5(?FILENAME)),
+
+      % check age
+      ?_assert(hd_cache:age(?FILENAME) >= 0)
      ]
     }.

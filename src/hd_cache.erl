@@ -6,6 +6,8 @@
 
 -behaviour(gen_server).
 
+-include_lib("kernel/include/file.hrl").
+
 % start/stop server
 -export([start_link/0, start_link/1, stop/0]).
 
@@ -21,7 +23,8 @@
 -export([get_path/0,    % where cached files are stored
          write_file/2,  % write a cache file
          read_file/1,   % read a cache file
-	 md5/1		% calculate MD5 of cache file
+         md5/1,         % calculate MD5 of cache file
+         age/1          % age of cache file in seconds
         ]).
 
 -record(state, {path}).
@@ -81,6 +84,12 @@ handle_call({md5, Filename}, _From, State) ->
     Reply = binary_ext:to_hex(erlang:md5(Bytes)),
     {reply, Reply, State};
 
+% age of cache file in seconds
+handle_call({age, Filename}, _From, State) ->
+    {ok, FileInfo} = file:read_file_info(absname(Filename, State), [{time, posix}]),
+    Reply = erlang:system_time(second) - FileInfo#file_info.mtime,
+    {reply, Reply, State};
+
 % stop the server
 handle_call(stop, _From, State) ->
     Reason = normal,
@@ -98,6 +107,7 @@ stop()              -> gen_server:call(?MODULE, stop).
 get_path()          -> gen_server:call(?MODULE, get_path).
 read_file(Filename) -> gen_server:call(?MODULE, {read_file, Filename}).
 md5(Filename)       -> gen_server:call(?MODULE, {md5, Filename}).
+age(Filename)       -> gen_server:call(?MODULE, {age, Filename}).
 write_file(Filename, Bytes) ->
     gen_server:call(?MODULE, {write_file, Filename, Bytes}).
 

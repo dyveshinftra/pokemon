@@ -27,6 +27,18 @@ age_test() ->
     ?assert(erlang:system_time(second) - TimeAfterWrite =< WriteAge),
     hd_cache:stop().
 
+% make sure touch is between before and after touch timestamp
+touch_test() ->
+    hd_cache:start_link(?APPLICATION),
+    hd_cache:write_file(?FILENAME, "touch test"),
+    TimeBeforeTouch = erlang:system_time(second),
+    hd_cache:touch(?FILENAME),
+    TouchAge = hd_cache:age(?FILENAME),
+    TimeAfterTouch = erlang:system_time(second),
+    ?assert(erlang:system_time(second) - TimeBeforeTouch >= TouchAge),
+    ?assert(erlang:system_time(second) - TimeAfterTouch =< TouchAge),
+    hd_cache:stop().
+
 % actual API tests
 setup()             -> hd_cache:start_link(?APPLICATION).
 cleanup({ok, _Pid}) -> hd_cache:stop().

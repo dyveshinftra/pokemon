@@ -103,11 +103,9 @@ terminate(_Reason, _State) -> ok.
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 % public API
-stop()              -> gen_server:call(?MODULE, stop).
-get_path()          -> gen_server:call(?MODULE, get_path).
-read_file(Filename) -> gen_server:call(?MODULE, {read_file, Filename}).
-md5(Filename)       -> gen_server:call(?MODULE, {md5, Filename}).
-age(Filename)       -> gen_server:call(?MODULE, {age, Filename}).
-write_file(Filename, Bytes) ->
-    gen_server:call(?MODULE, {write_file, Filename, Bytes}).
-
+stop()                      -> gen_server:call(?MODULE, stop).
+get_path()                  -> gen_server:call(?MODULE, get_path).
+write_file(Filename, Bytes) -> gen_server:call(?MODULE, {write_file, Filename, Bytes}).
+read_file(Filename)         -> gen_server:call(?MODULE, {read_file, Filename}).
+md5(Filename)               -> gen_server:call(?MODULE, {md5, Filename}).
+age(Filename)               -> gen_server:call(?MODULE, {age, Filename}).
